@@ -49,10 +49,15 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        # NEXT_PUBLIC_* values are inlined into the client bundle at build
+        # time, so this must be a build arg — setting it only as a runtime
+        # `environment` entry would leave the browser calling the default.
+        # It is the URL the *browser* uses, so it cannot be the compose
+        # service name: `http://backend:8000` is unresolvable from the host.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     container_name: claimtracker_frontend
     restart: unless-stopped
-    environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
     ports:
       - "3000:3000"
     depends_on:
