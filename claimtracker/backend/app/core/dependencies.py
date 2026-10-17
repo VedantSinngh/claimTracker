@@ -13,8 +13,8 @@ from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.core.exceptions import AuthenticationError, AuthorizationError
 from app.core.security import decode_access_token
+from app.models.role import RoleName
 
 _bearer = HTTPBearer()
 
@@ -61,7 +61,14 @@ async def get_current_user(
 # ─── Role guards ───────────────────────────────────────────────────────────────
 
 def require_role(*allowed_roles: str):
-    """Factory: returns a dependency that checks the caller's role."""
+    """
+    Factory: returns a dependency that checks the caller's role.
+
+    The role is read from the JWT `role` claim, which carries the *name* from
+    the `roles` lookup table (see migration 0004) — so guards stay a cheap
+    string comparison with no extra query, and normalising the column did not
+    change the token format. Pass `RoleName` constants rather than literals.
+    """
 
     async def _guard(current_user: CurrentUser = Depends(get_current_user)) -> CurrentUser:
         if current_user.role not in allowed_roles:
@@ -74,5 +81,5 @@ def require_role(*allowed_roles: str):
     return _guard
 
 
-require_reviewer = require_role("reviewer", "admin")
-require_admin = require_role("admin")
+require_reviewer = require_role(RoleName.REVIEWER, RoleName.ADMIN)
+require_admin = require_role(RoleName.ADMIN)

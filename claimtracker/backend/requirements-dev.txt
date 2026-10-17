@@ -1,0 +1,14 @@
+# Development and CI-only dependencies.
+# Install with:  pip install -r requirements.txt -r requirements-dev.txt
+
+# ─── Linting ──────────────────────────────────────────────────────
+ruff==0.4.8
+
+# ─── Sample PDF generation (samples/create_sample_pdfs.py) ────────
+reportlab==4.2.0
+
+# ─── Postgres-backed tests (analytics SQL) ────────────────────────
+# Spins up a throwaway postgres:16-alpine container. Requires Docker.
+# CI uses a service container instead and sets POSTGRES_TEST_URL, in which
+# case these tests never touch Docker directly.
+testcontainers[postgres]==4.5.1

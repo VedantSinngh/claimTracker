@@ -5,6 +5,7 @@ Import all models so Alembic's env.py sees them when it does
 `from app.models import Base`.
 """
 from app.models.base import Base  # noqa: F401
+from app.models.role import Role, RoleName  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.models.claim import Claim, ClaimDocument, ExtractedFields  # noqa: F401
 from app.models.decision import Decision  # noqa: F401
@@ -15,6 +16,8 @@ from app.models.audit_log import AuditLog  # noqa: F401
 
 __all__ = [
     "Base",
+    "Role",
+    "RoleName",
     "User",
     "Claim",
     "ClaimDocument",

@@ -18,10 +18,11 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
+from app.models.types import JSONColumn
 
 
 class ClaimStatus(str):
@@ -139,7 +140,7 @@ class ExtractedFields(Base):
     diagnosis: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     facility_extracted: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     date_extracted: Mapped[Optional[date]] = mapped_column(DATE, nullable=True)
-    itemised_charges: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+    itemised_charges: Mapped[Optional[dict]] = mapped_column(JSONColumn, nullable=True)
     total_amount_extracted: Mapped[Optional[Decimal]] = mapped_column(Numeric(12, 2), nullable=True)
     llm_model: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     prompt_version: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)

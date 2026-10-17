@@ -211,16 +211,16 @@ class DecisionService:
     def _build_default_summary(ctx: ClaimContext, results: List[ValidationResult]) -> str:
         """Build a summary when the LLM didn't produce one."""
         lines = [
-            f"**Introduction**",
+            "**Introduction**",
             f"Claim for {ctx.claim_item} submitted by {ctx.patient_name}.",
             "",
-            f"**Claim Details**",
+            "**Claim Details**",
             f"- Amount: ${ctx.claim_amount:,.2f}",
             f"- Facility: {ctx.medical_facility}",
             f"- Date: {ctx.date_of_treatment}",
             f"- Diagnosis: {ctx.extracted_diagnosis or ctx.reason}",
             "",
-            f"**Validation Results**",
+            "**Validation Results**",
         ]
         for r in results:
             emoji = "✅" if r.outcome == ValidationOutcome.PASS else (

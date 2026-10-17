@@ -15,6 +15,55 @@
 | **Next.js App Router** | Full-stack React, SSR, file-based routing | Vite+React (no SSR), Angular (heavier) |
 | **n8n** | Visual workflow automation, self-hosted, webhook-native | Zapier (SaaS cost), custom scripts (no UI) |
 
+## Normalization: why `roles` is a table, not an enum column
+
+`users.role` started as a Postgres `ENUM('user','reviewer','admin')`. Migration
+0004 replaced it with a `roles` lookup table and a `users.role_id` FK.
+
+**The 3NF argument.** A role has attributes of its own — today a
+`description`, tomorrow a permission set or an escalation SLA. With an enum
+column there is nowhere to put them, so they end up duplicated on every user
+row that shares the role. That is a transitive dependency:
+`users.id → users.role → role description`, i.e. a non-key attribute
+determined by another non-key attribute. Third normal form says that
+dependency belongs in its own relation, keyed by the role. Moving it also
+removes the update anomaly: changing a role's description is one `UPDATE roles`
+row instead of an update across every user who holds it.
+
+**The operational argument** (the one that actually bites in production):
+
+| Operation | Enum column | Lookup table |
+|---|---|---|
+| Add a role | `ALTER TYPE … ADD VALUE` — cannot run inside a transaction block, so it cannot be bundled with the rest of a migration | `INSERT` |
+| Rename a role | `ALTER TYPE … RENAME VALUE` (PG 10+), rewrites nothing but still DDL | `UPDATE` |
+| Remove a role | **Impossible** — Postgres cannot drop an enum value; you recreate the type and rewrite every dependent column | `DELETE`, blocked by `ON DELETE RESTRICT` while users still hold it |
+| Store role metadata | Nowhere | Ordinary columns |
+| Referential integrity | Type-level only | Real FK, so an unknown role cannot be written at all |
+
+**What it cost.** A join to read the role name. Three things keep that cheap:
+
+1. `ix_roles_name` (unique) makes the register-time name → FK lookup an index hit.
+2. `ix_users_role_id` supports the reverse direction ("list all reviewers").
+3. The ORM relationship is `lazy="joined"`, so loading a user fetches the role
+   in the same `SELECT` — one query, not N+1. This is not optional under async
+   SQLAlchemy: an implicit lazy load outside a greenlet raises `MissingGreenlet`,
+   so the eager strategy is enforced by the runtime, not just by preference.
+
+**What it deliberately did not change.** The role *name* is the public
+contract — it is the JWT `role` claim and the `role` field in API responses.
+`User.role` is therefore a `hybrid_property` returning `role_obj.name`, with a
+SQL expression form so `select(User).where(User.role == "admin")` still
+compiles to a correlated subquery. The refactor is invisible from outside the
+database layer; `require_role` guards still compare plain strings with no extra
+query, because the name is already in the token.
+
+**When the enum would have been the right call.** If the set were truly fixed
+by the domain and carried no attributes — a `claim_status` of
+`PENDING|PROCESSING|ACCEPTED|REJECTED|NEEDS_REVIEW`, say — the enum wins: it is
+smaller, needs no join, and the state machine is documented in the type itself.
+That is exactly why `claims.status` is still an enum in this schema. The
+distinction is whether the values have attributes and whether the set churns.
+
 ## Trade-offs
 
 | Trade-off | Decision | Downside |
@@ -22,7 +71,7 @@
 | FAISS vs pgvector | FAISS for simplicity | Must reload index on restart; can't scale past single-server |
 | Background task vs queue | FastAPI BackgroundTasks | No retry, no dead letter queue, single-process |
 | Regex PII vs NER | Regex for speed | Misses novel PII patterns |
-| SQLite for dev | Fast iteration | No concurrent writes, no JSONB (uses TEXT) |
+| SQLite for dev | Fast iteration, no Docker needed for most tests | No concurrent writes; the Postgres-only analytics SQL (`DATE_TRUNC`, `FILTER`, `RANK() OVER`) cannot run there, so those tests use a throwaway Postgres container instead |
 | LLM for extraction | Flexible, handles varied bill formats | Cost per call, latency, hallucination risk |
 
 ## Scaling Plan (10,000 claims/day)

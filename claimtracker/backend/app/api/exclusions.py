@@ -4,7 +4,6 @@ app/api/exclusions.py
 Admin-only CRUD for the exclusions list.
 """
 import uuid
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession

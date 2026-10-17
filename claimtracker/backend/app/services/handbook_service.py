@@ -21,7 +21,7 @@ import json
 import re
 import uuid
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 from uuid import UUID
 
 import faiss
@@ -295,7 +295,7 @@ class HandbookService:
             if existing is None:
                 exc = Exclusion(
                     term=term,
-                    description=f"Auto-seeded from handbook ingestion",
+                    description="Auto-seeded from handbook ingestion",
                     created_by=created_by,
                     is_active=True,
                 )

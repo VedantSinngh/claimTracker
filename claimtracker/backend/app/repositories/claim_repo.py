@@ -41,9 +41,13 @@ class ClaimRepository(BaseRepository[Claim]):
         limit: int = 20,
     ) -> Tuple[List[Claim], int]:
         """Return (claims, total_count) with optional filters."""
+        # extracted_fields is eager-loaded because ClaimResponse serialises it.
+        # Without it, Pydantic touches a lazy relationship during response
+        # validation and every GET /claims fails with MissingGreenlet.
         query = select(Claim).options(
             selectinload(Claim.documents),
             selectinload(Claim.decisions),
+            selectinload(Claim.extracted_fields),
         )
         count_query = select(func.count()).select_from(Claim)
 

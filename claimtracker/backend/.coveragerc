@@ -1,0 +1,35 @@
+# Coverage configuration.
+#
+# `pytest` measures all of `app/` so the terminal report shows the whole
+# picture. The enforced gate is narrower — 80% on the layers that hold the
+# business logic:
+#
+#   coverage report --include="app/services/*,app/validators/*" --fail-under=80
+#
+# CI runs exactly that command after the test run (see .github/workflows/ci.yml).
+# Routers, models and the Groq/FAISS adapters are deliberately outside the gate:
+# they are thin, or they wrap third-party IO that the suite fakes instead.
+
+[run]
+source = app
+branch = True
+omit =
+    app/__init__.py
+    */__init__.py
+    # Alembic env + migration scripts are exercised by `alembic upgrade head`,
+    # not by pytest.
+    alembic/*
+
+[report]
+precision = 2
+show_missing = True
+skip_covered = False
+exclude_lines =
+    pragma: no cover
+    # Abstract methods have no body to cover.
+    raise NotImplementedError
+    ^\s*\.\.\.$
+    if TYPE_CHECKING:
+
+[xml]
+output = coverage.xml

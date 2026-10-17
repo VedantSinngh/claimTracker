@@ -10,10 +10,11 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import DateTime, Enum, Float, ForeignKey, String, Text
-from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
+from app.models.types import JSONColumn
 
 
 class Decision(Base):
@@ -30,12 +31,12 @@ class Decision(Base):
         nullable=False,
     )
     reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    cited_clauses: Mapped[Optional[list]] = mapped_column(JSONB, nullable=True)
+    cited_clauses: Mapped[Optional[list]] = mapped_column(JSONColumn, nullable=True)
     executive_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     confidence_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     model_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     prompt_version: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    retrieved_chunks: Mapped[Optional[list]] = mapped_column(JSONB, nullable=True)
+    retrieved_chunks: Mapped[Optional[list]] = mapped_column(JSONColumn, nullable=True)
     decided_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
     )

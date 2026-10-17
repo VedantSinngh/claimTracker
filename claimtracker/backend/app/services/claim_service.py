@@ -36,6 +36,7 @@ from app.core.logging import get_logger
 from app.models.audit_log import AuditLog
 from app.models.claim import Claim, ClaimDocument, ExtractedFields
 from app.models.decision import Decision
+from app.models.role import RoleName
 from app.repositories.claim_repo import ClaimRepository
 from app.repositories.exclusion_repo import ExclusionRepository
 from app.schemas.claim import ClaimListResponse
@@ -129,7 +130,6 @@ class ClaimService:
             from app.core.database import AsyncSessionLocal
             from app.llm.groq_client import GroqClient
             from app.repositories.claim_repo import ClaimRepository
-            from app.repositories.exclusion_repo import ExclusionRepository
             from app.services.decision_service import DecisionService
             from app.services.extraction_service import ExtractionService
             from app.services.ocr_service import OCRService
@@ -318,7 +318,7 @@ class ClaimService:
         if claim is None:
             return None
         # Regular users can only see their own claims
-        if requesting_user.role == "user" and claim.user_id != requesting_user.user_id:
+        if requesting_user.role == RoleName.USER and claim.user_id != requesting_user.user_id:
             return None
         return claim
 

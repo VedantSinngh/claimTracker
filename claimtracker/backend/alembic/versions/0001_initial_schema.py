@@ -10,6 +10,8 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
+from app.models.types import JSONColumn
+
 revision: str = "0001"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
@@ -88,7 +90,7 @@ def upgrade() -> None:
         sa.Column("diagnosis", sa.String(255), nullable=True),
         sa.Column("facility_extracted", sa.String(255), nullable=True),
         sa.Column("date_extracted", sa.Date(), nullable=True),
-        sa.Column("itemised_charges", postgresql.JSONB(), nullable=True),
+        sa.Column("itemised_charges", JSONColumn, nullable=True),
         sa.Column("total_amount_extracted", sa.Numeric(12, 2), nullable=True),
         sa.Column("llm_model", sa.String(100), nullable=True),
         sa.Column("prompt_version", sa.String(50), nullable=True),
@@ -103,11 +105,11 @@ def upgrade() -> None:
         sa.Column("claim_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("claims.id", ondelete="CASCADE"), nullable=False),
         sa.Column("outcome", sa.Enum("ACCEPTED", "REJECTED", "NEEDS_REVIEW", name="decision_outcome_enum"), nullable=False),
         sa.Column("reason", sa.Text(), nullable=True),
-        sa.Column("cited_clauses", postgresql.JSONB(), nullable=True),
+        sa.Column("cited_clauses", JSONColumn, nullable=True),
         sa.Column("executive_summary", sa.Text(), nullable=True),
         sa.Column("model_name", sa.String(100), nullable=True),
         sa.Column("prompt_version", sa.String(50), nullable=True),
-        sa.Column("retrieved_chunks", postgresql.JSONB(), nullable=True),
+        sa.Column("retrieved_chunks", JSONColumn, nullable=True),
         sa.Column("decided_at", sa.DateTime(timezone=True), nullable=False),
     )
 
@@ -144,7 +146,7 @@ def upgrade() -> None:
         sa.Column("claim_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("claims.id", ondelete="SET NULL"), nullable=True),
         sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="SET NULL"), nullable=True),
         sa.Column("action", sa.String(100), nullable=False),
-        sa.Column("payload", postgresql.JSONB(), nullable=True),
+        sa.Column("payload", JSONColumn, nullable=True),
         sa.Column("ip_address", sa.String(50), nullable=True),
         sa.Column("logged_at", sa.DateTime(timezone=True), nullable=False),
     )

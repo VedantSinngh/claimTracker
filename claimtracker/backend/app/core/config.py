@@ -8,7 +8,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import List
 
-from pydantic import AnyHttpUrl, field_validator
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
