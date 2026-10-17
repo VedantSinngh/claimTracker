@@ -21,6 +21,8 @@ htmlcov/
 *.log
 *.db
 *.sqlite3
+coverage.xml
+.ruff_cache/
 faiss_index/
 *.faiss
 

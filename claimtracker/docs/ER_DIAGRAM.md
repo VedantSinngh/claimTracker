@@ -2,12 +2,19 @@
 
 ```mermaid
 erDiagram
+    ROLES {
+        uuid id PK
+        string name UK "user | reviewer | admin"
+        text description
+        timestamp created_at
+    }
+
     USERS {
         uuid id PK
         string email UK
         string hashed_password
         string full_name
-        enum role "user | reviewer | admin"
+        uuid role_id FK
         boolean is_active
         timestamp created_at
         timestamp updated_at
@@ -109,6 +116,7 @@ erDiagram
         timestamp logged_at
     }
 
+    ROLES ||--o{ USERS : "grants"
     USERS ||--o{ CLAIMS : "submits"
     CLAIMS ||--o{ CLAIM_DOCUMENTS : "has"
     CLAIMS ||--|| EXTRACTED_FIELDS : "has one"
@@ -131,9 +139,16 @@ erDiagram
 | `ix_claims_confidence_score` | claims | confidence_score | Low-confidence queue |
 | `ix_exclusions_term` | exclusions | term (UNIQUE) | Fast fuzzy lookup |
 | `ix_users_email` | users | email (UNIQUE) | Login lookup |
+| `ix_users_role_id` | users | role_id | Filter users by role (reviewer queue staffing) |
+| `ix_roles_name` | roles | name (UNIQUE) | Resolve a role name to its FK on register |
 
 ## Key Design Decisions
 
+- **`roles` as a lookup table, not an enum column** — see the 3NF note in
+  [`INTERVIEW_NOTES.md`](INTERVIEW_NOTES.md). `users.role_id` FK with
+  `ON DELETE RESTRICT`, so a role still in use cannot be deleted. The role
+  *name* remains the public contract (JWT claim, API field); normalising the
+  storage did not change the API.
 - **UUID PKs** — no integer enumeration attacks; safe to expose in REST URLs
 - **JSONB** for `itemised_charges`, `cited_clauses`, `retrieved_chunks`, `payload` — variable structure without extra tables
 - **Separate `extracted_fields`** (1:1 with claim) — clean audit: form input vs OCR/LLM output
