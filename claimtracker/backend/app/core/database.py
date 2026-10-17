@@ -12,14 +12,28 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.APP_ENV == "development",
-    pool_pre_ping=True,
-    # SQLite doesn't support pool settings; they're ignored for sqlite+aiosqlite
-    pool_size=10 if "postgresql" in settings.DATABASE_URL else 1,
-    max_overflow=20 if "postgresql" in settings.DATABASE_URL else 0,
-)
+
+def _engine_kwargs(database_url: str) -> dict:
+    """
+    Pool options differ by backend.
+
+    `pool_size` / `max_overflow` belong to QueuePool, which only Postgres uses
+    here. SQLite does not merely ignore them — SQLAlchemy picks StaticPool (or
+    NullPool) for aiosqlite and then raises
+    `TypeError: Invalid argument(s) 'pool_size','max_overflow'`, so they must
+    not be passed at all on the SQLite dev path.
+    """
+    kwargs: dict = {
+        "echo": settings.APP_ENV == "development",
+        "pool_pre_ping": True,
+    }
+    if database_url.startswith("postgresql"):
+        kwargs["pool_size"] = 10
+        kwargs["max_overflow"] = 20
+    return kwargs
+
+
+engine = create_async_engine(settings.DATABASE_URL, **_engine_kwargs(settings.DATABASE_URL))
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,

@@ -9,10 +9,11 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey, String
-from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
+from app.models.types import JSONColumn
 
 
 class AuditLog(Base):
@@ -29,7 +30,7 @@ class AuditLog(Base):
     )
     action: Mapped[str] = mapped_column(String(100), nullable=False)
     # payload stores: prompt_version, model_name, retrieved_chunks, confidence, etc.
-    payload: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+    payload: Mapped[Optional[dict]] = mapped_column(JSONColumn, nullable=True)
     ip_address: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     logged_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
