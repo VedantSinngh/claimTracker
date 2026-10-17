@@ -13,7 +13,6 @@ This service is stateless and does not touch the database.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 import pdfplumber
 import pytesseract

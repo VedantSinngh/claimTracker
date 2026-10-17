@@ -2,7 +2,6 @@
 tests/unit/test_pii_masker.py
 ──────────────────────────────
 """
-import pytest
 from app.services.pii_masker import PIIMasker
 
 

@@ -4,7 +4,6 @@ tests/unit/test_handbook_chunking.py
 Unit tests for the text chunking and General Exclusions parser.
 No I/O, no models, no DB — pure function tests.
 """
-import pytest
 
 from app.services.handbook_service import (
     MIN_CHUNK_LENGTH,

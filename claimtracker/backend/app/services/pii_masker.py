@@ -16,7 +16,7 @@ Patterns masked:
 from __future__ import annotations
 
 import re
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 
 # ── Compiled regex patterns ────────────────────────────────────────────────────

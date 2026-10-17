@@ -16,11 +16,10 @@ from __future__ import annotations
 
 import json
 from datetime import date
-from decimal import Decimal
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, field_validator
 
 from app.core.config import get_settings
 from app.core.exceptions import ExtractionError
@@ -174,7 +173,7 @@ class ExtractionService:
         if cleaned.startswith("```"):
             lines = cleaned.split("\n")
             # Drop first and last lines (```json and ```)
-            lines = [l for l in lines if not l.strip().startswith("```")]
+            lines = [ln for ln in lines if not ln.strip().startswith("```")]
             cleaned = "\n".join(lines)
 
         # Try to find JSON object boundaries

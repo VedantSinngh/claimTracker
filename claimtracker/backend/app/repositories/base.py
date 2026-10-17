@@ -4,7 +4,7 @@ app/repositories/base.py
 Generic async repository base — provides common CRUD operations.
 Subclass and specialise; never put SQL in services.
 """
-from typing import Any, Generic, List, Optional, Type, TypeVar
+from typing import Generic, List, Optional, Type, TypeVar
 from uuid import UUID
 
 from sqlalchemy import func, select

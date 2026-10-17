@@ -20,7 +20,6 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 
 from app.core.config import get_settings
-from app.core.exceptions import LLMError
 from app.core.logging import get_logger
 from app.llm.base import LLMClient, LLMMessage
 from app.services.pii_masker import PIIMasker
@@ -197,7 +196,7 @@ class RAGPolicyCheckValidator(BaseValidator):
         cleaned = text.strip()
         if cleaned.startswith("```"):
             lines = cleaned.split("\n")
-            lines = [l for l in lines if not l.strip().startswith("```")]
+            lines = [ln for ln in lines if not ln.strip().startswith("```")]
             cleaned = "\n".join(lines)
         start = cleaned.find("{")
         end = cleaned.rfind("}") + 1

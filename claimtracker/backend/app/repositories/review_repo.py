@@ -2,12 +2,11 @@
 app/repositories/review_repo.py
 ─────────────────────────────────
 """
-from typing import List, Tuple
+from typing import List
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.models.review import Review
 from app.repositories.base import BaseRepository

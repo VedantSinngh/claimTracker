@@ -11,7 +11,6 @@ from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPExcepti
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user, get_db, CurrentUser
-from app.core.exceptions import NotFoundError
 from app.models.role import RoleName
 from app.schemas.claim import ClaimListResponse, ClaimResponse
 from app.services.claim_service import ClaimService

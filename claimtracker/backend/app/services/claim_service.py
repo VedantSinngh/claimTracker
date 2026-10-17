@@ -130,7 +130,6 @@ class ClaimService:
             from app.core.database import AsyncSessionLocal
             from app.llm.groq_client import GroqClient
             from app.repositories.claim_repo import ClaimRepository
-            from app.repositories.exclusion_repo import ExclusionRepository
             from app.services.decision_service import DecisionService
             from app.services.extraction_service import ExtractionService
             from app.services.ocr_service import OCRService
