@@ -13,14 +13,36 @@ psycopg2-binary==2.9.9
 # ─── Auth / Security ──────────────────────────────────────────────
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+# passlib 1.7.4 reads `bcrypt.__about__.__version__`, which bcrypt removed in
+# 4.1, and its backend probe breaks outright on bcrypt 5.x. The extra does not
+# constrain the version, so pin it here or password hashing fails at runtime.
+bcrypt==4.0.1
 
 # ─── Settings ─────────────────────────────────────────────────────
 pydantic==2.7.1
 pydantic-settings==2.2.1
 
+# ─── Numerics ─────────────────────────────────────────────────────
+# These three were previously unpinned, so a fresh install picked up
+# NumPy 2.x and broke the AI stack. All of them must stay on the 1.x ABI:
+#   * faiss-cpu 1.8.0 and torch 2.3.0 are compiled against NumPy 1.x — with
+#     NumPy >= 2 installed, `import faiss` dies at `from . import _swigfaiss`
+#     with "numpy.core.multiarray failed to import".
+#   * scipy >= 1.14 and scikit-learn >= 1.6 require NumPy >= 2, so they pull
+#     it back in transitively through sentence-transformers.
+numpy==1.26.4
+scipy==1.13.1
+scikit-learn==1.5.0
+
 # ─── AI / LLM ─────────────────────────────────────────────────────
 groq==0.9.0
 sentence-transformers==3.0.1
+# transformers must stay contemporary with sentence-transformers 3.0.1:
+# 4.5x moved GenerationMixin, so the newer releases fail on import with
+# "cannot import name 'GenerationMixin' from 'transformers.generation'".
+transformers==4.41.2
+tokenizers==0.19.1
+huggingface-hub==0.23.4
 faiss-cpu==1.8.0
 torch==2.3.0               # sentence-transformers dependency
 
