@@ -1,0 +1,81 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL ──────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: claimtracker_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: claimtracker
+      POSTGRES_USER: claimuser
+      POSTGRES_PASSWORD: claimpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U claimuser -d claimtracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend (FastAPI) ───────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: claimtracker_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://claimuser:claimpass@postgres:5432/claimtracker
+    volumes:
+      - ./backend:/app
+      - uploads_data:/app/uploads
+      - faiss_data:/app/faiss_index
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  # ── Frontend (Next.js) ──────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: claimtracker_frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  # ── n8n Automation ──────────────────────────────────────────────
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: claimtracker_n8n
+    restart: unless-stopped
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: admin
+      N8N_BASIC_AUTH_PASSWORD: claimtracker_n8n_pass
+      WEBHOOK_URL: http://n8n:5678
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./automation:/home/node/.n8n/workflows
+
+volumes:
+  postgres_data:
+  uploads_data:
+  faiss_data:
+  n8n_data:
