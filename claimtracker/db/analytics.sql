@@ -96,14 +96,16 @@ ORDER BY avg_seconds DESC;
 
 -- -----------------------------------------------------------------------------
 -- 4. Claims Per User — JOIN version
---    Full join between users and claims with aggregated status counts.
+--    Three-table join: users → roles (INNER, the role name lives in the
+--    lookup table since migration 0004) and users → claims (LEFT, so a user
+--    with no claims would still appear before the HAVING filter removes them).
 --    Demonstrates multi-table JOINs, GROUP BY, HAVING, and CASE WHEN.
 -- -----------------------------------------------------------------------------
 SELECT
     u.id                                                        AS user_id,
     u.full_name,
     u.email,
-    u.role,
+    r.name                                                      AS role,
     COUNT(c.id)                                                 AS total_claims,
     SUM(CASE WHEN c.status = 'ACCEPTED'     THEN 1 ELSE 0 END) AS accepted,
     SUM(CASE WHEN c.status = 'REJECTED'     THEN 1 ELSE 0 END) AS rejected,
@@ -112,9 +114,10 @@ SELECT
     SUM(c.claim_amount)                                         AS total_claimed_amount,
     AVG(c.confidence_score)                                     AS avg_confidence
 FROM users u
+JOIN roles r      ON r.id = u.role_id
 LEFT JOIN claims c ON c.user_id = u.id
-WHERE u.role = 'user'   -- filter on a single table (users)
-GROUP BY u.id, u.full_name, u.email, u.role
+WHERE r.name = 'user'   -- claimants only; reviewers/admins do not file claims
+GROUP BY u.id, u.full_name, u.email, r.name
 HAVING COUNT(c.id) > 0
 ORDER BY total_claims DESC;
 

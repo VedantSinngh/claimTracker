@@ -36,6 +36,7 @@ from app.core.logging import get_logger
 from app.models.audit_log import AuditLog
 from app.models.claim import Claim, ClaimDocument, ExtractedFields
 from app.models.decision import Decision
+from app.models.role import RoleName
 from app.repositories.claim_repo import ClaimRepository
 from app.repositories.exclusion_repo import ExclusionRepository
 from app.schemas.claim import ClaimListResponse
@@ -318,7 +319,7 @@ class ClaimService:
         if claim is None:
             return None
         # Regular users can only see their own claims
-        if requesting_user.role == "user" and claim.user_id != requesting_user.user_id:
+        if requesting_user.role == RoleName.USER and claim.user_id != requesting_user.user_id:
             return None
         return claim
 

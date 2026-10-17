@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user, get_db, CurrentUser
 from app.core.exceptions import NotFoundError
+from app.models.role import RoleName
 from app.schemas.claim import ClaimListResponse, ClaimResponse
 from app.services.claim_service import ClaimService
 
@@ -66,7 +67,11 @@ async def list_claims(
 ):
     """List claims. Regular users see only their own; reviewers/admins see all."""
     svc = ClaimService(db)
-    user_id = None if current_user.role in ("reviewer", "admin") else current_user.user_id
+    user_id = (
+        None
+        if current_user.role in (RoleName.REVIEWER, RoleName.ADMIN)
+        else current_user.user_id
+    )
     return await svc.list_claims(
         user_id=user_id, status=status, page=page, page_size=page_size
     )
